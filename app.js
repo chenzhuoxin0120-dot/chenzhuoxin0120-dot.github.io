@@ -790,7 +790,19 @@ function moveTaskToColumn(id, newStatus) {
   updateGlobalStats();
 }
 
-/* ── 按钮移动任务到相邻列 ── */
+/* ── 更新看板各列的任务计数徽章（不重建整个看板）── */
+function updateKanbanCounts() {
+  ["todo", "inProgress", "done"].forEach(status => {
+    const col   = document.querySelector(`.kanban-col[data-status="${status}"]`);
+    const badge = col?.querySelector(".kanban-col-count");
+    if (!badge) return;
+    const n = tasks.filter(t => getTaskStatus(t) === status).length;
+    badge.textContent = n;
+    badge.className   = "kanban-col-count" + (n > 5 ? " wip-warning" : "");
+  });
+}
+
+/* ── 按钮移动任务到相邻列（带滑动动画）── */
 function moveTaskStatus(id, dir) {
   const task = tasks.find(t => t.id === id);
   if (!task) return;
@@ -800,11 +812,55 @@ function moveTaskStatus(id, dir) {
   const newIdx = stages.indexOf(cur) + dir;
   if (newIdx < 0 || newIdx >= stages.length) return;
 
-  task.status = stages[newIdx];
-  task.done   = (task.status === "done");
-  saveTasks();
-  renderKanban();
-  updateGlobalStats();
+  const newStatus     = stages[newIdx];
+  const card          = document.querySelector(`.kanban-card[data-id="${id}"]`);
+  const targetColBody = document.querySelector(`.kanban-col[data-status="${newStatus}"] .kanban-col-body`);
+
+  // 若找不到 DOM 元素（如从时间轴调用），走全量刷新兜底
+  if (!card || !targetColBody) {
+    task.status = newStatus;
+    task.done   = (newStatus === "done");
+    saveTasks();
+    renderKanban();
+    updateGlobalStats();
+    return;
+  }
+
+  // ① 卡片飞出当前列
+  card.style.transition = "opacity 0.22s ease, transform 0.22s ease";
+  card.style.opacity    = "0";
+  card.style.transform  = dir > 0
+    ? "translateX(52px) scale(0.93)"
+    : "translateX(-52px) scale(0.93)";
+
+  setTimeout(() => {
+    // ② 更新数据
+    task.status = newStatus;
+    task.done   = (newStatus === "done");
+    saveTasks();
+
+    // ③ 从原列移除，更新计数
+    card.remove();
+    updateKanbanCounts();
+
+    // ④ 新卡片从对侧飞入目标列
+    const newCard = createKanbanCard(task);
+    newCard.style.transition = "none";
+    newCard.style.opacity    = "0";
+    newCard.style.transform  = dir > 0
+      ? "translateX(-52px) scale(0.93)"
+      : "translateX(52px) scale(0.93)";
+    targetColBody.appendChild(newCard);
+
+    // 强制回流后启动入场动画
+    newCard.getBoundingClientRect();
+    newCard.style.transition = "opacity 0.28s ease, transform 0.28s ease";
+    newCard.style.opacity    = "1";
+    newCard.style.transform  = "translateX(0) scale(1)";
+
+    updateKanbanCounts();
+    updateGlobalStats();
+  }, 240);
 }
 
 /* ── 初始全量渲染（仅页面首次加载时调用）── */
@@ -1271,7 +1327,8 @@ function addTaskFromAI(text, priority, description, estimatedMinutes, dueDate) {
 
   // 列表视图是增量 DOM，无论当前在哪个视图都必须更新
   const groupEl = getOrCreateDateGroup(newTask.date);
-  groupEl.querySelector("ul").appendChild(createTaskLi(newTask, true));
+  const ul = groupEl.querySelector("ul");
+  ul.appendChild(createTaskLi(newTask, true));
   updateGroupStats(newTask.date);
   applySort();
   applyFilter();
@@ -1280,6 +1337,12 @@ function addTaskFromAI(text, priority, description, estimatedMinutes, dueDate) {
   if (currentView === "kanban")   renderKanban();
   if (currentView === "timeline") renderTimeline();
   updateGlobalStats();
+
+  // AI 智能分类（为子任务补充 category，与手动添加行为一致）
+  const newLi = ul.querySelector(`li[data-id="${newTask.id}"]`);
+  const dot   = newLi?.querySelector(".ai-pending-dot");
+  if (dot) dot.style.display = "";
+  analyzeTaskWithAI(newTask.id);
 }
 
 /* ════════════════════════════════

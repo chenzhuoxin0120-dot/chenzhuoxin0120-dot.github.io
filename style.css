@@ -758,7 +758,7 @@ li.removing {
   border-radius: 10px;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  overflow: visible; /* 不裁切卡片滑入/滑出动画 */
 }
 
 .kanban-col[data-status="todo"]       { background-color: #1b2030; }
@@ -799,6 +799,7 @@ li.removing {
   flex-direction: column;
   gap: 8px;
   min-height: 60px;
+  overflow: visible; /* 允许卡片动画时短暂超出列边界 */
 }
 
 /* ── 看板卡片 ── */
@@ -808,7 +809,8 @@ li.removing {
   border: 1px solid #2e2e2e;
   border-radius: 8px;
   overflow: hidden;
-  transition: border-color 0.15s, box-shadow 0.15s;
+  transition: border-color 0.15s, box-shadow 0.15s, opacity 0.22s ease, transform 0.22s ease;
+  will-change: transform, opacity;
 }
 
 .kanban-card:hover {
