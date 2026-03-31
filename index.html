@@ -5,12 +5,28 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Checkly · 我的待办清单</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✅</text></svg>">
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#667eea" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Checkly" />
+  <link rel="apple-touch-icon" href="icon-192.png" />
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <div class="container">
-    <div class="page-title">📝 我的待办清单</div>
-    <div class="page-subtitle" id="todayLabel"></div>
+    <div class="page-header">
+      <div class="page-header-text">
+        <div class="page-title">📝 我的待办清单</div>
+        <div class="page-subtitle" id="todayLabel"></div>
+      </div>
+      <div class="header-actions">
+        <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="切换主题">🌙 深色</button>
+        <button class="data-btn" onclick="exportData()" title="导出所有任务为 JSON 文件">⬇ 导出</button>
+        <button class="data-btn" onclick="importData()" title="从 JSON 文件导入任务">⬆ 导入</button>
+      </div>
+    </div>
 
     <div class="input-area">
       <div class="input-date-row">
@@ -137,7 +153,12 @@
       </div>
 
       <div id="taskContainer"></div>
-      <p class="empty-tip" id="emptyTip">还没有任务，快添加一条吧！</p>
+      <div class="empty-state" id="emptyTip" style="display:none">
+        <div class="empty-state-icon" id="emptyIcon">📋</div>
+        <p class="empty-state-title" id="emptyTitle">还没有任务，快来添加第一条吧 ✨</p>
+        <p class="empty-state-sub" id="emptySub">点击上方输入框，开始规划你的一天</p>
+        <button class="empty-clear-filter" id="emptyClearFilter" onclick="clearAllFilters()" style="display:none">清除筛选</button>
+      </div>
     </div>
 
     <div id="kanbanContainer"  class="kanban-container"  style="display:none"></div>

@@ -265,11 +265,9 @@ function applyFilter() {
 
   // 空状态提示
   if (tasks.length === 0) {
-    emptyTip.textContent = "还没有任务，快添加一条吧！";
-    emptyTip.style.display = "block";
+    showEmptyState("no-tasks");
   } else if (visibleCount === 0) {
-    emptyTip.textContent = "没有符合条件的任务";
-    emptyTip.style.display = "block";
+    showEmptyState("no-match");
   } else {
     emptyTip.style.display = "none";
   }
@@ -452,7 +450,7 @@ function updateGlobalStats() {
   const totalDone = tasks.filter(t => t.done).length;
   if (tasks.length === 0) {
     globalStats.innerHTML = "";
-    emptyTip.style.display = "block";
+    showEmptyState("no-tasks");
   } else {
     emptyTip.style.display = "none";
     globalStats.innerHTML =
@@ -813,7 +811,7 @@ function render() {
   const totalDone = tasks.filter(t => t.done).length;
   if (tasks.length === 0) {
     globalStats.innerHTML = "";
-    emptyTip.style.display = "block";
+    showEmptyState("no-tasks");
     return;
   }
   emptyTip.style.display = "none";
@@ -1605,6 +1603,25 @@ async function sendChatMessage() {
   }
 }
 
+/* ── 主题 ── */
+function initTheme() {
+  const saved = localStorage.getItem("checkly-theme") || "dark";
+  const btn = document.getElementById("themeToggle");
+  if (saved === "light") {
+    document.body.classList.add("light");
+    btn.textContent = "🌙 深色";
+  } else {
+    btn.textContent = "☀️ 浅色";
+  }
+}
+
+function toggleTheme() {
+  const isLight = document.body.classList.toggle("light");
+  document.getElementById("themeToggle").textContent = isLight ? "🌙 深色" : "☀️ 浅色";
+  localStorage.setItem("checkly-theme", isLight ? "light" : "dark");
+}
+
+initTheme();
 loadCallCount();
 loadTasks();
 loadViews();
@@ -1618,3 +1635,105 @@ runAIReminder();
 setInterval(() => {
   if (getTodayStr() !== todayStr) location.reload();
 }, 60 * 1000);
+
+/* ════════════════════════════════
+   数据导出 / 导入
+   ════════════════════════════════ */
+function exportData() {
+  const payload = {
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    tasks: tasks,
+    views: savedViews
+  };
+  const json = JSON.stringify(payload, null, 2);
+  const blob = new Blob([json], { type: "application/json" });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement("a");
+  a.href     = url;
+  a.download = `checkly-backup-${getTodayStr()}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function importData() {
+  const input = document.createElement("input");
+  input.type   = "file";
+  input.accept = ".json,application/json";
+  input.onchange = e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      try {
+        const data = JSON.parse(ev.target.result);
+        if (!data.tasks || !Array.isArray(data.tasks)) {
+          alert("文件格式不正确，请选择由 Checkly 导出的备份文件。");
+          return;
+        }
+        if (!confirm(`将导入 ${data.tasks.length} 条任务，并替换当前所有数据，确认继续？`)) return;
+        tasks = data.tasks;
+        savedViews = Array.isArray(data.views) ? data.views : [];
+        saveTasks();
+        persistViews();
+        render();
+        applySort();
+        applyFilter();
+        renderViews();
+        updateGlobalStats();
+        if (currentView === "kanban")   renderKanban();
+        if (currentView === "timeline") renderTimeline();
+      } catch {
+        alert("文件解析失败，请检查文件是否损坏。");
+      }
+    };
+    reader.readAsText(file);
+  };
+  document.body.appendChild(input);
+  input.click();
+  document.body.removeChild(input);
+}
+
+/* ════════════════════════════════
+   空状态辅助
+   ════════════════════════════════ */
+function showEmptyState(type) {
+  const icon     = document.getElementById("emptyIcon");
+  const title    = document.getElementById("emptyTitle");
+  const sub      = document.getElementById("emptySub");
+  const clearBtn = document.getElementById("emptyClearFilter");
+  if (type === "no-tasks") {
+    icon.textContent  = "📋";
+    title.textContent = "还没有任务，快来添加第一条吧 ✨";
+    sub.textContent   = "点击上方输入框，开始规划你的一天";
+    clearBtn.style.display = "none";
+  } else {
+    icon.textContent  = "🔍";
+    title.textContent = "没有符合条件的任务";
+    sub.textContent   = "试试调整筛选条件或搜索关键词";
+    clearBtn.style.display = "inline-block";
+  }
+  emptyTip.style.display = "flex";
+}
+
+function clearAllFilters() {
+  filterStatus   = "all";
+  filterPriority = "all";
+  searchQuery    = "";
+  searchInput.value = "";
+  searchClear.style.display = "none";
+  document.querySelectorAll('.filter-btn[data-group="status"]').forEach(b => b.classList.remove("active"));
+  document.querySelector('.filter-btn[data-group="status"][data-value="all"]').classList.add("active");
+  document.querySelectorAll('.filter-btn[data-group="priority"]').forEach(b => b.classList.remove("active"));
+  document.querySelector('.filter-btn[data-group="priority"][data-value="all"]').classList.add("active");
+  applyFilter();
+}
+
+/* ── PWA Service Worker 注册 ── */
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("/sw.js").catch(() => {});
+  });
+}

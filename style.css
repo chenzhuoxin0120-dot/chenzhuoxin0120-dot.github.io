@@ -1606,6 +1606,294 @@ li.removing {
 }
 
 /* ════════════════════════════════
+   页面顶部 header（标题 + 操作按钮组）
+   ════════════════════════════════ */
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 36px;
+}
+
+.page-header-text .page-title    { margin-bottom: 4px; }
+.page-header-text .page-subtitle { margin-bottom: 0; }
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  flex-shrink: 0;
+}
+
+/* 主题切换 & 数据按钮共用基础样式 */
+.theme-toggle,
+.data-btn {
+  background: transparent;
+  border: 1px solid #333;
+  border-radius: 999px;
+  color: #777;
+  font-size: 12px;
+  padding: 5px 13px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: border-color 0.2s, color 0.2s, background-color 0.2s;
+}
+
+.theme-toggle:hover,
+.data-btn:hover {
+  border-color: #667eea;
+  color: #a5b4fc;
+}
+
+/* ════════════════════════════════
+   空状态设计
+   ════════════════════════════════ */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 24px 40px;
+  gap: 10px;
+  animation: fadeSlideIn 0.35s ease both;
+}
+
+.empty-state-icon {
+  font-size: 56px;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.empty-state-title {
+  font-size: 15px;
+  color: #888;
+  font-weight: 500;
+  text-align: center;
+}
+
+.empty-state-sub {
+  font-size: 13px;
+  color: #555;
+  text-align: center;
+}
+
+.empty-clear-filter {
+  margin-top: 8px;
+  background: transparent;
+  border: 1px solid #444;
+  border-radius: 999px;
+  color: #888;
+  font-size: 12px;
+  padding: 5px 16px;
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s;
+}
+
+.empty-clear-filter:hover {
+  border-color: #667eea;
+  color: #a5b4fc;
+}
+
+/* ════════════════════════════════
+   浅色模式
+   ════════════════════════════════ */
+body.light {
+  background-color: #f5f5f5;
+  color: #1a1a1a;
+}
+
+/* 标题 */
+body.light .page-title    { color: #1a1a1a; }
+body.light .page-subtitle { color: #999; }
+
+/* 输入区域 */
+body.light .input-area  { background-color: #ffffff; border-color: #e0e0e0; }
+body.light .date-label  { color: #888; }
+body.light .due-optional { color: #bbb; }
+
+body.light .date-input,
+body.light .priority-select {
+  background-color: #f5f5f5;
+  border-color: #d0d0d0;
+  color: #1a1a1a;
+}
+
+body.light .task-input {
+  border-bottom-color: #ccc;
+  color: #1a1a1a;
+}
+body.light .task-input::placeholder { color: #bbb; }
+
+/* 任务列表 */
+body.light .date-header { border-bottom-color: #e8e8e8; }
+body.light .date-title  { color: #999; }
+
+body.light li:hover { background-color: #f0f0f0; }
+body.light li.overdue-task { background-color: rgba(248, 113, 113, 0.05); }
+body.light li.overdue-task:hover { background-color: rgba(248, 113, 113, 0.09); }
+
+body.light .checkbox       { border-color: #ccc; }
+body.light .task-text      { color: #1a1a1a; }
+body.light .task-text.done { color: #bbb; text-decoration-color: #ccc; }
+body.light .btn-delete     { color: #ccc; }
+body.light .btn-edit-due   { color: #ccc; }
+
+body.light .due-date-label        { color: #aaa; }
+body.light .due-date-input-inline { background-color: #f5f5f5; color: #1a1a1a; }
+
+body.light .estimate-badge { color: #aaa; }
+
+/* 统计 */
+body.light .global-stats         { color: #bbb; }
+body.light .global-stats .g-sep  { color: #ddd; }
+body.light .global-stats .g-total{ color: #aaa; }
+
+/* 搜索栏 */
+body.light .search-bar              { background-color: #ffffff; border-color: #e0e0e0; }
+body.light .search-input            { color: #1a1a1a; }
+body.light .search-input::placeholder { color: #bbb; }
+body.light .search-clear            { color: #ccc; }
+
+/* 筛选栏 */
+body.light .sort-select       { background-color: #f5f5f5; border-color: #d0d0d0; color: #777; }
+body.light .sort-select:focus { color: #1a1a1a; }
+
+body.light .filter-label { color: #bbb; }
+
+body.light .filter-btn        { border-color: #e0e0e0; color: #aaa; }
+body.light .filter-btn:hover  { border-color: #aaa; color: #555; }
+body.light .filter-btn.active { background-color: #f0f0f0; border-color: #999; color: #1a1a1a; }
+
+/* 收藏视图 */
+body.light .save-view-btn       { border-color: #e0e0e0; color: #bbb; }
+body.light .view-chip           { background-color: #f5f5f5; border-color: #e0e0e0; color: #777; }
+body.light .view-chip:hover     { border-color: #aaa; color: #333; }
+body.light .view-chip.active    { background-color: rgba(102, 126, 234, 0.08); }
+body.light .view-del            { color: #ccc; }
+
+/* 数据按钮 */
+body.light .theme-toggle,
+body.light .data-btn {
+  border-color: #d0d0d0;
+  color: #888;
+}
+body.light .theme-toggle:hover,
+body.light .data-btn:hover {
+  border-color: #667eea;
+  color: #667eea;
+  background-color: #f0f0ff;
+}
+
+/* 空状态 */
+body.light .empty-state-title { color: #aaa; }
+body.light .empty-state-sub   { color: #bbb; }
+body.light .empty-clear-filter {
+  border-color: #d0d0d0;
+  color: #aaa;
+}
+body.light .empty-clear-filter:hover {
+  border-color: #667eea;
+  color: #667eea;
+  background-color: #f0f0ff;
+}
+
+/* 视图切换按钮 */
+body.light .view-btn        { border-color: #e0e0e0; color: #aaa; }
+body.light .view-btn:hover  { border-color: #aaa; color: #555; }
+body.light .view-btn.active { background-color: #f0f0f0; border-color: #667eea; color: #1a1a1a; }
+
+/* 看板 */
+body.light .kanban-col[data-status="todo"]       { background-color: #eef2ff; }
+body.light .kanban-col[data-status="inProgress"] { background-color: #fffbeb; }
+body.light .kanban-col[data-status="done"]       { background-color: #f0fdf4; }
+
+body.light .kanban-col-header { border-bottom-color: rgba(0,0,0,0.07); }
+body.light .kanban-col-count  { background-color: rgba(0,0,0,0.05); color: #999; }
+
+body.light .kanban-card       { background-color: #ffffff; border-color: #e2e5ea; }
+body.light .kanban-card:hover { border-color: #c0c3ca; box-shadow: 0 2px 10px rgba(0,0,0,0.07); }
+body.light .kanban-card-title { color: #1a1a1a; }
+body.light .kanban-card-due   { color: #bbb; }
+body.light .kanban-move-btn   { border-color: #e0e0e0; color: #aaa; }
+
+/* 时间轴 */
+body.light .tl-dot      { background-color: #e0e0e0; border-color: #c0c0c0; }
+body.light .tl-dot.past { background-color: #efefef; border-color: #ddd; }
+body.light .tl-line     { background-color: #e8e8e8; }
+
+body.light .tl-date-label        { color: #aaa; }
+body.light .tl-date-label.past   { color: #ccc; }
+body.light .tl-date-label.no-due { color: #ccc; }
+
+body.light .tl-card       { background-color: #ffffff; border-color: #e2e5ea; }
+body.light .tl-card:hover { border-color: #c0c3ca; }
+body.light .tl-card-title      { color: #1a1a1a; }
+body.light .tl-card-title.done { color: #ccc; }
+
+body.light .tl-status-badge.todo       { background-color: rgba(100, 130, 200, 0.08); }
+body.light .tl-status-badge.inProgress { background-color: rgba(200, 160, 50, 0.08); }
+body.light .tl-status-badge.done       { background-color: rgba(60, 160, 90, 0.08); }
+
+/* AI 拆解区域 */
+body.light .ai-section    { background-color: #f0f0ff; border-color: #d5d8f0; }
+body.light .ai-label      { color: #667eea; }
+body.light .ai-model-label { color: #9090b0; }
+body.light .ai-model-select {
+  background-color: #ffffff;
+  border-color: #d0d0e8;
+  color: #667eea;
+}
+body.light .ai-goal-input {
+  background-color: #ffffff;
+  border-color: #d0d0e8;
+  color: #1a1a1a;
+}
+body.light .ai-goal-input::placeholder { color: #c0c0d8; }
+
+body.light .ai-call-count { color: #9090b0; }
+
+body.light .ai-task-item  { background-color: #f8f8ff; border-color: #d8d8f0; }
+body.light .ai-task-title { color: #1a1a1a; }
+body.light .ai-task-meta  { color: #9090b0; }
+body.light .ai-task-desc  { color: #9090b0; }
+body.light .ai-add-btn    { border-color: #c0c0e0; color: #667eea; }
+
+/* AI 智能提醒 */
+body.light .ai-remind-banner  { background-color: #f0f0ff; border-color: #d5d8f0; }
+body.light .ai-remind-text    { color: #333355; }
+body.light .ai-remind-dismiss { color: #bbb; }
+
+/* 多轮对话 */
+body.light .ai-chat             { border-top-color: #e0e0f0; }
+body.light .ai-chat-label       { color: #9090b0; }
+body.light .ai-chat-clear       { border-color: #e0e0f0; color: #bbb; }
+body.light .ai-chat-clear:hover { border-color: #aaa; color: #777; }
+body.light .ai-chat-messages    { scrollbar-color: #d0d0e8 transparent; }
+body.light .ai-chat-messages::-webkit-scrollbar-thumb { background-color: #d0d0e8; }
+
+body.light .ai-chat-msg.user      {
+  background-color: rgba(102, 126, 234, 0.08);
+  border-color: rgba(102, 126, 234, 0.15);
+  color: #2a3a80;
+}
+body.light .ai-chat-msg.assistant {
+  background-color: #f8f8ff;
+  border-color: #e0e0f0;
+  color: #222244;
+}
+body.light .ai-chat-input             { background-color: #ffffff; border-color: #d0d0e8; color: #1a1a1a; }
+body.light .ai-chat-input::placeholder { color: #c0c0d8; }
+
+/* AI 添加弹窗 */
+body.light .ai-add-popover     { background-color: #ffffff; border-color: #d0d0e8; box-shadow: 0 8px 28px rgba(0,0,0,0.12); }
+body.light .ai-popover-task-name { color: #667eea; }
+body.light .ai-popover-label   { color: #9090b0; }
+body.light .ai-popover-input,
+body.light .ai-popover-select  { background-color: #f5f5ff; border-color: #d0d0e8; color: #1a1a1a; }
+body.light .ai-popover-cancel  { border-color: #d0d0e8; color: #9090b0; }
+
+/* ════════════════════════════════
    Mobile（≤ 640px）
    ════════════════════════════════ */
 @media (max-width: 640px) {
@@ -1744,4 +2032,13 @@ li.removing {
 
   .due-badge { font-size: 10px; }
   .category-badge { font-size: 10px; }
+
+  /* ── 主题切换按钮 ── */
+  .theme-toggle {
+    top: 10px;
+    right: 10px;
+    width: 32px;
+    height: 32px;
+    font-size: 14px;
+  }
 }
