@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Checkly · 我的待办清单</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✅</text></svg>">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <div class="page-title">📝 我的待办清单</div>
+    <div class="page-subtitle" id="todayLabel"></div>
+
+    <div class="input-area">
+      <div class="input-date-row">
+        <span class="date-label">截止日期</span>
+        <input type="date" class="date-input" id="dueDateInput" />
+        <span class="date-label due-optional">选填</span>
+        <span class="date-label" style="margin-left:auto;">优先级</span>
+        <select class="priority-select" id="prioritySelect">
+          <option value="high">🔴 高优先</option>
+          <option value="medium" selected>🟡 中优先</option>
+          <option value="low">🟢 低优先</option>
+        </select>
+      </div>
+      <div class="input-task-row">
+        <input
+          type="text"
+          class="task-input"
+          id="taskInput"
+          placeholder="输入新任务，按 Enter 或点添加…"
+        />
+        <button class="add-btn" onclick="addTask()">添加</button>
+      </div>
+      <div class="error-tip" id="errorTip">请输入任务内容，不能为空</div>
+    </div>
+
+    <div class="ai-section">
+      <div class="ai-header">
+        <span class="ai-label">✨ AI 拆解目标</span>
+        <span class="ai-call-count" id="aiCallCount">API 0 次</span>
+      </div>
+      <div class="ai-model-row">
+        <span class="ai-model-label">模型</span>
+        <select class="ai-model-select" id="aiModelSelect">
+          <option value="deepseek-chat" selected>deepseek-chat（推荐）</option>
+          <option value="deepseek-reasoner">deepseek-reasoner</option>
+        </select>
+      </div>
+      <div class="ai-input-row">
+        <input
+          type="text"
+          class="ai-goal-input"
+          id="aiGoalInput"
+          placeholder="输入粗略目标（如：准备期末考试、策划一场生日派对）"
+          onkeydown="if(event.key==='Enter') runAIDecompose()"
+        />
+        <button class="ai-btn" id="aiBtn" onclick="runAIDecompose()">✨ 拆解</button>
+      </div>
+      <div class="ai-status" id="aiStatus"></div>
+      <div class="ai-results" id="aiResults"></div>
+
+      <div class="ai-chat" id="aiChat" style="display:none">
+        <div class="ai-chat-header">
+          <span class="ai-chat-label">💬 追问 AI</span>
+          <button class="ai-chat-clear" onclick="clearChat()">清空对话</button>
+        </div>
+        <div class="ai-chat-messages" id="aiChatMessages"></div>
+        <div class="ai-chat-input-row">
+          <input
+            type="text"
+            class="ai-chat-input"
+            id="aiChatInput"
+            placeholder="例如：第一个子任务再拆细一点…"
+            onkeydown="if(event.key==='Enter') sendChatMessage()"
+          />
+          <button class="ai-chat-send" id="aiChatSend" onclick="sendChatMessage()">发送</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="ai-smart-remind" id="aiSmartRemind" style="display:none">
+      <div class="ai-remind-banner" id="aiRemindBanner">
+        <div class="ai-remind-text" id="aiRemindText"></div>
+        <button class="ai-remind-dismiss" onclick="dismissReminder()">×</button>
+      </div>
+    </div>
+
+    <div class="global-stats" id="globalStats"></div>
+
+    <div class="view-toggle">
+      <button class="view-btn active" data-view="list"     onclick="switchView('list')">☰ 列表视图</button>
+      <button class="view-btn"        data-view="kanban"   onclick="switchView('kanban')">⊞ 看板视图</button>
+      <button class="view-btn"        data-view="timeline" onclick="switchView('timeline')">📅 时间轴</button>
+    </div>
+
+    <div id="listView">
+      <div class="filter-bar">
+        <div class="filter-group">
+          <span class="filter-label">状态</span>
+          <button class="filter-btn active" data-group="status" data-value="all"     onclick="setStatusFilter('all')">全部</button>
+          <button class="filter-btn"        data-group="status" data-value="active"  onclick="setStatusFilter('active')">未完成</button>
+          <button class="filter-btn"        data-group="status" data-value="done"    onclick="setStatusFilter('done')">已完成</button>
+          <button class="filter-btn"        data-group="status" data-value="overdue" onclick="setStatusFilter('overdue')">已过期</button>
+        </div>
+        <div class="filter-group">
+          <span class="filter-label">优先级</span>
+          <button class="filter-btn active" data-group="priority" data-value="all"    onclick="setPriorityFilter('all')">全部</button>
+          <button class="filter-btn"        data-group="priority" data-value="high"   onclick="setPriorityFilter('high')">🔴 高</button>
+          <button class="filter-btn"        data-group="priority" data-value="medium" onclick="setPriorityFilter('medium')">🟡 中</button>
+          <button class="filter-btn"        data-group="priority" data-value="low"    onclick="setPriorityFilter('low')">🟢 低</button>
+          <span class="filter-label sort-label">排序</span>
+          <select class="sort-select" id="sortSelect" onchange="handleSort()">
+            <option value="created">⏱ 创建时间</option>
+            <option value="dueDate">📅 截止日期</option>
+            <option value="priority">🎯 优先级</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="search-bar">
+        <span class="search-icon">🔍</span>
+        <input
+          type="text"
+          id="searchInput"
+          class="search-input"
+          placeholder="搜索任务…"
+          oninput="handleSearch()"
+        />
+        <button class="search-clear" id="searchClear" onclick="clearSearch()">×</button>
+      </div>
+
+      <div class="views-bar">
+        <button class="save-view-btn" onclick="saveCurrentView()" title="将当前筛选条件保存为视图">☆ 保存视图</button>
+        <div class="views-list" id="viewsList"></div>
+      </div>
+
+      <div id="taskContainer"></div>
+      <p class="empty-tip" id="emptyTip">还没有任务，快添加一条吧！</p>
+    </div>
+
+    <div id="kanbanContainer"  class="kanban-container"  style="display:none"></div>
+    <div id="timelineContainer" class="timeline-container" style="display:none"></div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
