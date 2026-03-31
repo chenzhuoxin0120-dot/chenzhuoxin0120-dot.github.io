@@ -534,6 +534,7 @@ function addTask() {
   const text = taskInput.value.trim();
   if (!text) { showError(); taskInput.focus(); return; }
 
+  const catSelect = document.getElementById("categorySelect");
   const newTask = {
     id:       Date.now(),
     text,
@@ -542,11 +543,13 @@ function addTask() {
     done:     false,
     priority: prioritySelect.value,
     status:   "todo",
+    category: catSelect.value || null,
   };
   tasks.push(newTask);
   saveTasks();
 
-  taskInput.value = "";
+  taskInput.value  = "";
+  catSelect.value  = "";
   taskInput.focus();
 
   // 直接向对应日期组追加 li，其他元素完全不动
@@ -1038,8 +1041,8 @@ async function analyzeTaskWithAI(taskId) {
     const jsonStr = raw.replace(/^```[a-z]*\n?/i, "").replace(/```$/, "").trim();
     const result  = JSON.parse(jsonStr);
 
-    if (["high","medium","low"].includes(result.priority))         task.priority         = result.priority;
-    if (["work","study","life","other"].includes(result.category)) task.category         = result.category;
+    if (["high","medium","low"].includes(result.priority))                             task.priority = result.priority;
+    if (!task.category && ["work","study","life","other"].includes(result.category)) task.category = result.category; // 不覆盖手动设置
     if (result.estimatedMinutes > 0)                               task.estimatedMinutes = Number(result.estimatedMinutes);
     // 写入 AI 推算的截止日期（格式校验）
     if (result.dueDate && /^\d{4}-\d{2}-\d{2}$/.test(result.dueDate)) {

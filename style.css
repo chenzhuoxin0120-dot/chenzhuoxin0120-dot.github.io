@@ -1905,14 +1905,35 @@ body.light .ai-popover-cancel  { border-color: #d0d0e8; color: #9090b0; }
   }
 
   .page-title    { font-size: 24px; }
-  .page-subtitle { font-size: 12px; margin-bottom: 20px; }
+  .page-subtitle { font-size: 12px; margin-bottom: 0; }
 
-  /* ── 输入区域 ── */
-  .input-area {
-    padding: 12px;
+  /* ── 顶部操作按钮（主题 / 导出 / 导入）── */
+  .header-actions {
+    gap: 5px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    max-width: 50%;
   }
 
-  /* 16px 防止 iOS 自动缩放页面 */
+  .theme-toggle,
+  .data-btn {
+    font-size: 11px;
+    padding: 5px 10px;
+    min-height: 30px;
+    border-color: #555;   /* 深色模式下更高对比度 */
+    color: #ccc;
+  }
+
+  /* ── 输入区域 ── */
+  .input-area { padding: 12px; }
+
+  /* 分类 select 在小屏换行 */
+  .input-date-row {
+    flex-wrap: wrap;
+    row-gap: 8px;
+  }
+
+  /* 16px 防止 iOS 自动缩放 */
   .task-input,
   .date-input,
   .priority-select,
@@ -1924,11 +1945,32 @@ body.light .ai-popover-cancel  { border-color: #d0d0e8; color: #9090b0; }
 
   .task-text { font-size: 15px; }
 
+  /* ── 截止日期标签 + 编辑按钮：手机常显，加大触摸区 ── */
+  .due-date-label {
+    font-size: 13px;
+    color: #888;
+  }
+
+  .btn-edit-due {
+    opacity: 1;           /* 手机上始终可见 */
+    font-size: 15px;
+    min-width: 32px;
+    min-height: 32px;
+    padding: 4px 6px;
+    color: #667eea;
+    border: 1px solid #444;
+    border-radius: 6px;
+  }
+
+  .due-container {
+    gap: 4px;
+    align-items: center;
+  }
+
   /* ── 触摸友好按钮（最小 44px 高）── */
   .add-btn,
   .ai-btn,
-  .view-btn,
-  .nl-btn {
+  .view-btn {
     min-height: 44px;
     padding: 0 16px;
     font-size: 14px;
@@ -1959,9 +2001,7 @@ body.light .ai-popover-cancel  { border-color: #d0d0e8; color: #9090b0; }
   }
 
   /* ── 视图切换按钮 ── */
-  .view-toggle {
-    gap: 4px;
-  }
+  .view-toggle { gap: 4px; }
 
   .view-btn {
     flex: 1;
@@ -1970,11 +2010,7 @@ body.light .ai-popover-cancel  { border-color: #d0d0e8; color: #9090b0; }
     font-size: 12px;
   }
 
-  /* ── 看板：横向滚动，不挤列 ── */
-  .container.kanban-active {
-    max-width: 100%;
-  }
-
+  /* ── 看板：每列接近满屏宽 ── */
   .kanban-container {
     flex-direction: row;
     overflow-x: auto;
@@ -1982,10 +2018,16 @@ body.light .ai-popover-cancel  { border-color: #d0d0e8; color: #9090b0; }
     scroll-snap-type: x mandatory;
     gap: 10px;
     padding-bottom: 12px;
+    /* 撑出容器内边距，列宽接近屏宽 */
+    margin-left: -12px;
+    margin-right: -12px;
+    padding-left: 12px;
+    padding-right: 12px;
+    width: calc(100% + 24px);
   }
 
   .kanban-col {
-    min-width: 80vw;   /* 每列占 80% 屏宽，左右可滑动 */
+    min-width: calc(100vw - 34px); /* 满屏，右侧留 ~10px 提示可滑动 */
     scroll-snap-align: start;
     flex-shrink: 0;
   }
@@ -2000,10 +2042,7 @@ body.light .ai-popover-cancel  { border-color: #d0d0e8; color: #9090b0; }
   .tl-date-label { font-size: 12px; }
 
   /* ── AI 区域 ── */
-  .ai-section,
-  .nl-section {
-    padding: 12px;
-  }
+  .ai-section { padding: 12px; }
 
   .ai-task-title { font-size: 13px; }
   .ai-task-desc  { font-size: 11px; }
@@ -2013,7 +2052,7 @@ body.light .ai-popover-cancel  { border-color: #d0d0e8; color: #9090b0; }
     padding: 0 12px;
   }
 
-  /* ── AI 弹窗全宽 ── */
+  /* ── AI 弹窗全宽固定底部 ── */
   .ai-add-popover {
     position: fixed;
     left: 12px;
@@ -2030,15 +2069,6 @@ body.light .ai-popover-cancel  { border-color: #d0d0e8; color: #9090b0; }
     gap: 8px;
   }
 
-  .due-badge { font-size: 10px; }
+  .due-badge      { font-size: 10px; }
   .category-badge { font-size: 10px; }
-
-  /* ── 主题切换按钮 ── */
-  .theme-toggle {
-    top: 10px;
-    right: 10px;
-    width: 32px;
-    height: 32px;
-    font-size: 14px;
-  }
 }
