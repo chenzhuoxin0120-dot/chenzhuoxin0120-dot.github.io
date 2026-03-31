@@ -1133,26 +1133,28 @@ function updateTaskAIDisplay(taskId) {
   const bar = li.querySelector(".priority-bar");
   if (bar) bar.className = `priority-bar ${task.priority || "medium"}`;
 
-  // 更新/新建分类标签
+  // 更新/新建分类标签（插在 aiDot 之后，与 createTaskLi 顺序一致）
   let catBadge = li.querySelector(".category-badge");
   if (task.category) {
     if (!catBadge) {
       catBadge = document.createElement("span");
       catBadge.title   = "点击切换分类";
       catBadge.onclick = () => cycleCategory(taskId);
-      li.insertBefore(catBadge, li.querySelector(".due-container"));
+      const aiDot = li.querySelector(".ai-pending-dot");
+      li.insertBefore(catBadge, aiDot ? aiDot.nextSibling : li.querySelector(".due-container"));
     }
     catBadge.className   = `category-badge ${task.category}`;
     catBadge.textContent = catMap[task.category] || task.category;
   }
 
-  // 更新/新建预估用时
+  // 更新/新建预估用时（插在 catBadge 之后）
   let estBadge = li.querySelector(".estimate-badge");
   if (task.estimatedMinutes) {
     if (!estBadge) {
       estBadge = document.createElement("span");
       estBadge.className = "estimate-badge";
-      li.insertBefore(estBadge, li.querySelector(".due-container"));
+      const anchor = catBadge || li.querySelector(".ai-pending-dot");
+      li.insertBefore(estBadge, anchor ? anchor.nextSibling : li.querySelector(".due-container"));
     }
     estBadge.textContent = `⏱ ${task.estimatedMinutes}m`;
   }
@@ -1703,63 +1705,18 @@ setInterval(() => {
 }, 60 * 1000);
 
 /* ════════════════════════════════
-   数据导出 / 导入
+   导出时间轴为 PDF
    ════════════════════════════════ */
 function exportData() {
-  const payload = {
-    version: 1,
-    exportedAt: new Date().toISOString(),
-    tasks: tasks,
-    views: savedViews
-  };
-  const json = JSON.stringify(payload, null, 2);
-  const blob = new Blob([json], { type: "application/json" });
-  const url  = URL.createObjectURL(blob);
-  const a    = document.createElement("a");
-  a.href     = url;
-  a.download = `checkly-backup-${getTodayStr()}.json`;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-}
+  // 先切换到时间轴视图（确保内容已渲染）
+  switchView("timeline");
 
-function importData() {
-  const input = document.createElement("input");
-  input.type   = "file";
-  input.accept = ".json,application/json";
-  input.onchange = e => {
-    const file = e.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = ev => {
-      try {
-        const data = JSON.parse(ev.target.result);
-        if (!data.tasks || !Array.isArray(data.tasks)) {
-          alert("文件格式不正确，请选择由 Checkly 导出的备份文件。");
-          return;
-        }
-        if (!confirm(`将导入 ${data.tasks.length} 条任务，并替换当前所有数据，确认继续？`)) return;
-        tasks = data.tasks;
-        savedViews = Array.isArray(data.views) ? data.views : [];
-        saveTasks();
-        persistViews();
-        render();
-        applySort();
-        applyFilter();
-        renderViews();
-        updateGlobalStats();
-        if (currentView === "kanban")   renderKanban();
-        if (currentView === "timeline") renderTimeline();
-      } catch {
-        alert("文件解析失败，请检查文件是否损坏。");
-      }
-    };
-    reader.readAsText(file);
-  };
-  document.body.appendChild(input);
-  input.click();
-  document.body.removeChild(input);
+  // 等待时间轴渲染完成后打开打印对话框
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      window.print();
+    });
+  });
 }
 
 /* ════════════════════════════════

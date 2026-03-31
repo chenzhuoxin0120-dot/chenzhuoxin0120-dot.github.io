@@ -2074,3 +2074,71 @@ body.light .ai-popover-cancel  { border-color: #d0d0e8; color: #9090b0; }
   .due-badge      { font-size: 10px; }
   .category-badge { font-size: 10px; }
 }
+
+/* ════════════════════════════════
+   打印样式（导出时间轴 PDF）
+   ════════════════════════════════ */
+@media print {
+  /* 隐藏所有内容，只保留时间轴 */
+  body {
+    background: #fff !important;
+    color: #111 !important;
+    padding: 20px !important;
+    font-size: 13px !important;
+  }
+
+  /* 隐藏所有不需要的区域 */
+  .input-area,
+  .ai-section,
+  .ai-smart-remind,
+  .global-stats,
+  .view-toggle,
+  #listView,
+  #kanbanContainer,
+  .header-actions,
+  .page-subtitle {
+    display: none !important;
+  }
+
+  /* 保留页面标题 */
+  .page-header {
+    margin-bottom: 16px !important;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 10px;
+  }
+
+  .page-title {
+    font-size: 20px !important;
+    color: #111 !important;
+  }
+
+  /* 时间轴强制显示 */
+  #timelineContainer {
+    display: block !important;
+  }
+
+  /* 时间轴卡片适配打印 */
+  .tl-card {
+    background: #fff !important;
+    border: 1px solid #ccc !important;
+    break-inside: avoid;
+  }
+
+  .tl-card-title      { color: #111 !important; }
+  .tl-card-title.done { color: #aaa !important; text-decoration: line-through; }
+  .tl-date-label      { color: #555 !important; }
+
+  .tl-status-badge.todo       { background: #eef !important; color: #336 !important; }
+  .tl-status-badge.inProgress { background: #ffe !important; color: #640 !important; }
+  .tl-status-badge.done       { background: #efe !important; color: #050 !important; }
+
+  .tl-priority-bar.high   { background: #f87171 !important; }
+  .tl-priority-bar.medium { background: #fbbf24 !important; }
+  .tl-priority-bar.low    { background: #4ade80 !important; }
+
+  .tl-dot  { background: #ccc !important; border-color: #aaa !important; }
+  .tl-line { background: #ddd !important; }
+
+  /* 避免时间轴条目跨页截断 */
+  .tl-row { break-inside: avoid; }
+}
