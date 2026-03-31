@@ -1268,17 +1268,16 @@ function addTaskFromAI(text, priority, description, estimatedMinutes, dueDate) {
   tasks.push(newTask);
   saveTasks();
 
-  if (currentView === "list") {
-    const groupEl = getOrCreateDateGroup(newTask.date);
-    groupEl.querySelector("ul").appendChild(createTaskLi(newTask, true));
-    updateGroupStats(newTask.date);
-    applySort();
-    applyFilter();
-  } else if (currentView === "kanban") {
-    renderKanban();
-  } else if (currentView === "timeline") {
-    renderTimeline();
-  }
+  // 列表视图是增量 DOM，无论当前在哪个视图都必须更新
+  const groupEl = getOrCreateDateGroup(newTask.date);
+  groupEl.querySelector("ul").appendChild(createTaskLi(newTask, true));
+  updateGroupStats(newTask.date);
+  applySort();
+  applyFilter();
+
+  // 当前是看板或时间轴则同步刷新
+  if (currentView === "kanban")   renderKanban();
+  if (currentView === "timeline") renderTimeline();
   updateGlobalStats();
 }
 
