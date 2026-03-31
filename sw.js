@@ -1,4 +1,4 @@
-const CACHE_NAME = "checkly-v1";
+const CACHE_NAME = "checkly-v2";
 const STATIC_ASSETS = [
   "/",
   "/index.html",
@@ -27,7 +27,7 @@ self.addEventListener("activate", event => {
   self.clients.claim();
 });
 
-// 请求拦截：AI API 走网络，其余走缓存优先
+// 请求拦截：网络优先策略（确保每次更新后立即生效）
 self.addEventListener("fetch", event => {
   const url = event.request.url;
 
@@ -37,19 +37,18 @@ self.addEventListener("fetch", event => {
     return;
   }
 
-  // 静态资源：缓存优先，缓存不命中时再去网络
+  // 静态资源：网络优先，网络失败时才回退到缓存（离线可用）
   event.respondWith(
-    caches.match(event.request).then(cached => {
-      if (cached) return cached;
-      return fetch(event.request).then(response => {
-        // 只缓存同源、成功的响应
-        if (!response || response.status !== 200 || response.type !== "basic") {
-          return response;
-        }
+    fetch(event.request).then(response => {
+      // 只缓存同源、成功的响应
+      if (response && response.status === 200 && response.type === "basic") {
         const toCache = response.clone();
         caches.open(CACHE_NAME).then(cache => cache.put(event.request, toCache));
-        return response;
-      });
+      }
+      return response;
+    }).catch(() => {
+      // 网络不可用时回退缓存（离线模式）
+      return caches.match(event.request);
     })
   );
 });
